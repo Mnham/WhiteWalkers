@@ -1,0 +1,381 @@
+.app-shell {
+  --panel-border: rgb(255 255 255 / 12%);
+  --panel-bg: linear-gradient(180deg, rgb(255 255 255 / 9%), rgb(255 255 255 / 4%));
+  --panel-inner-bg: rgb(2 6 23 / 28%);
+  --text-primary: #f8fafc;
+  --text-secondary: rgb(226 232 240 / 62%);
+  --radius-panel: 24px;
+  --radius-section: 18px;
+  --radius-control: 14px;
+
+  position: relative;
+  overflow: hidden;
+  height: 100svh;
+  min-height: 100svh;
+  text-align: left;
+  background:
+    radial-gradient(circle at top left, rgb(106 64 255 / 24%), transparent 34rem),
+    linear-gradient(135deg, #10131c 0%, #151925 48%, #0e1118 100%);
+}
+
+.app-shell::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(90deg, rgb(8 11 18 / 34%) 0%, rgb(8 11 18 / 8%) 42%, transparent 78%),
+    radial-gradient(circle at bottom right, rgb(56 211 159 / 18%), transparent 28rem);
+}
+
+.control-panel {
+  position: absolute;
+  z-index: 2;
+  top: 24px;
+  bottom: 24px;
+  left: 24px;
+  display: flex;
+  width: min(420px, calc(100vw - 48px));
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: var(--radius-panel);
+  background: rgb(15 18 27 / 78%);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 38%);
+  padding: 14px;
+  backdrop-filter: blur(22px) saturate(140%);
+  scrollbar-color: rgb(148 163 184 / 55%) rgb(15 23 42 / 28%);
+  scrollbar-width: thin;
+}
+
+.control-panel,
+.control-panel * {
+  user-select: none;
+}
+
+.control-panel::-webkit-scrollbar,
+.track-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.control-panel::-webkit-scrollbar-track,
+.track-list::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgb(15 23 42 / 28%);
+}
+
+.control-panel::-webkit-scrollbar-thumb,
+.track-list::-webkit-scrollbar-thumb {
+  border: 2px solid rgb(15 18 27 / 78%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(148 163 184 / 70%), rgb(100 116 139 / 54%));
+}
+
+.control-panel::-webkit-scrollbar-thumb:hover,
+.track-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(203 213 225 / 78%), rgb(148 163 184 / 66%));
+}
+
+.panel-section {
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-section);
+  background: var(--panel-bg);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 10%);
+  padding: 12px;
+}
+
+.track-upload {
+  display: block;
+}
+
+.track-upload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.track-upload-button {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 760;
+  letter-spacing: -0.01em;
+  box-shadow: 0 14px 32px rgb(37 99 235 / 28%);
+  user-select: none;
+}
+
+.track-upload:not(:has(input:disabled)) .track-upload-button:hover {
+  border-color: rgb(255 255 255 / 28%);
+  background: linear-gradient(135deg, #8b5cf6, #2f6df6);
+  transform: translateY(-1px);
+}
+
+.track-upload input:disabled + .track-upload-status,
+.track-upload:has(input:disabled) .track-upload-button {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.track-upload-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.stats-grid {
+  padding: 12px;
+}
+
+.stats-card {
+  display: grid;
+  min-height: 68px;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1.35fr);
+  gap: 16px;
+  align-items: center;
+  border-radius: var(--radius-control);
+  background: var(--panel-inner-bg);
+  padding: 12px 14px;
+}
+
+.stats-metric {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stats-divider {
+  width: 1px;
+  height: 42px;
+  background: linear-gradient(180deg, transparent, rgb(255 255 255 / 18%), transparent);
+}
+
+.stats-metric strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 24px;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-metric small {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.map-actions-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+.track-upload-button,
+.clear-tracks-button,
+.map-actions-panel button {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.map-actions-panel button {
+  background: var(--panel-inner-bg);
+  color: rgb(226 232 240 / 86%);
+}
+
+.map-actions-panel button:not(:disabled):hover {
+  border-color: rgb(255 255 255 / 28%);
+  background:
+    linear-gradient(180deg, rgb(125 211 252 / 10%), rgb(125 211 252 / 4%)),
+    var(--panel-inner-bg);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.track-upload:has(input:focus-visible) .track-upload-button,
+.clear-tracks-button:focus-visible,
+.map-actions-panel button:focus-visible {
+  outline: none;
+  border-color: rgb(125 211 252 / 38%);
+  box-shadow:
+    0 0 0 3px rgb(125 211 252 / 12%),
+    inset 0 1px 0 rgb(255 255 255 / 10%);
+}
+
+.track-upload:not(:has(input:disabled)) .track-upload-button:active,
+.clear-tracks-button:not(:disabled):active,
+.map-actions-panel button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.map-actions-panel button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+  opacity: 0.5;
+}
+
+.track-panel {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+.track-panel-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.clear-tracks-button {
+  border-color: var(--panel-border);
+  background: var(--panel-inner-bg);
+  color: rgb(226 232 240 / 86%);
+  cursor: pointer;
+  padding-inline: 16px;
+}
+
+.clear-tracks-button:not(:disabled):hover {
+  border-color: rgb(248 113 113 / 34%);
+  background:
+    linear-gradient(180deg, rgb(248 113 113 / 10%), rgb(248 113 113 / 4%)),
+    var(--panel-inner-bg);
+  color: #fecaca;
+  transform: translateY(-1px);
+}
+
+.clear-tracks-button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+  opacity: 0.5;
+}
+
+.track-list {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 6px;
+  overflow: auto;
+  padding: 1px 2px 1px 1px;
+  scrollbar-color: rgb(148 163 184 / 55%) transparent;
+  scrollbar-width: thin;
+}
+
+.track-list-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--radius-control);
+  background: var(--panel-inner-bg);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 9px 11px;
+  text-align: left;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.track-list-item:hover {
+  border-color: rgb(255 255 255 / 20%);
+  background:
+    linear-gradient(180deg, rgb(125 211 252 / 8%), rgb(125 211 252 / 3%)),
+    var(--panel-inner-bg);
+  transform: translateY(-1px);
+}
+
+.track-list-item[aria-pressed='true'] {
+  border-color: rgb(125 211 252 / 38%);
+  background:
+    linear-gradient(180deg, rgb(125 211 252 / 14%), rgb(125 211 252 / 5%)),
+    var(--panel-inner-bg);
+  box-shadow: inset 3px 0 0 rgb(125 211 252 / 82%);
+}
+
+.track-list-item:focus-visible {
+  outline: none;
+  border-color: rgb(125 211 252 / 38%);
+  box-shadow:
+    0 0 0 3px rgb(125 211 252 / 12%),
+    inset 0 1px 0 rgb(255 255 255 / 10%);
+}
+
+.track-list-item:active {
+  transform: translateY(0);
+}
+
+.track-list-item strong {
+  flex: 0 0 auto;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-list-item time {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.maplibregl-ctrl-bottom-left,
+.maplibregl-ctrl-top-left {
+  margin-left: 470px;
+}
