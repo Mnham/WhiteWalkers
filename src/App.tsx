@@ -37,6 +37,8 @@ function App() {
   }, [tracks, trackPoints])
   const totalDistanceMeters =
     tracks.reduce((totalDistance, track) => totalDistance + track.distanceMeters, 0)
+  const totalDurationSeconds =
+    tracks.reduce((totalDuration, track) => totalDuration + track.durationSeconds, 0)
 
   function handleTracksImported(importedTracks: ParsedGpxTrack[]) {
     const importedAt = new Date().toISOString()
@@ -51,6 +53,7 @@ function App() {
         importedAt,
         startedAt: parsedTrack.startedAt,
         distanceMeters: parsedTrack.distanceMeters,
+        durationSeconds: parsedTrack.durationSeconds,
       })
 
       nextTrackPoints.push(
@@ -90,6 +93,11 @@ function App() {
             <div className="stats-metric">
               <strong>{formatDistance(totalDistanceMeters)}</strong>
               <small>километраж</small>
+            </div>
+            <div className="stats-divider" aria-hidden="true" />
+            <div className="stats-metric">
+              <strong>{formatDuration(totalDurationSeconds)}</strong>
+              <small>длительность</small>
             </div>
           </div>
         </section>
@@ -150,6 +158,10 @@ function formatDistance(distanceMeters: number) {
   return `${(distanceMeters / 1_000).toFixed(1)} km`
 }
 
+function formatDuration(durationSeconds: number) {
+  return `${Math.round(durationSeconds / 3_600)} ч`
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('ru-RU', {
     day: 'numeric',
@@ -162,11 +174,7 @@ function compareTracksByDate(firstTrack: Track, secondTrack: Track) {
   const firstTime = getTrackSortTime(firstTrack)
   const secondTime = getTrackSortTime(secondTrack)
 
-  if (firstTime !== secondTime) {
-    return firstTime - secondTime
-  }
-
-  return 0
+  return firstTime - secondTime
 }
 
 function getTrackSortTime(track: Track) {

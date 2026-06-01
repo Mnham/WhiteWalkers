@@ -3,6 +3,7 @@ export interface Track {
   importedAt: string
   startedAt?: string
   distanceMeters: number
+  durationSeconds: number
 }
 
 export interface TrackPoint {

@@ -6,6 +6,7 @@ interface ParsedTrackPoint {
 export interface ParsedGpxTrack {
   startedAt?: string
   distanceMeters: number
+  durationSeconds: number
   points: ParsedTrackPoint[]
 }
 
@@ -24,7 +25,9 @@ export function parseGpx(gpxText: string): ParsedGpxTrack {
 
   const pointElements = findElements(document, 'trkpt')
   const routePointElements = pointElements.length > 0 ? pointElements : findElements(document, 'rtept')
-  const points = routePointElements.flatMap(parsePoint)
+  const points = routePointElements
+    .map(parsePoint)
+    .filter((point): point is GpxPoint => Boolean(point))
 
   if (points.length === 0) {
     throw new Error('The GPX file does not contain any track points.')
@@ -33,25 +36,24 @@ export function parseGpx(gpxText: string): ParsedGpxTrack {
   return {
     startedAt: points[0].time,
     distanceMeters: calculateDistanceMeters(points),
+    durationSeconds: calculateDurationSeconds(points),
     points: points.map(({ lat, lng }) => ({ lat, lng })),
   }
 }
 
-function parsePoint(element: Element): GpxPoint[] {
+function parsePoint(element: Element): GpxPoint | undefined {
   const lat = Number(element.getAttribute('lat'))
   const lng = Number(element.getAttribute('lon'))
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return []
+    return undefined
   }
 
-  return [
-    {
-      lat,
-      lng,
-      time: getText(element, 'time'),
-    },
-  ]
+  return {
+    lat,
+    lng,
+    time: getText(element, 'time'),
+  }
 }
 
 function calculateDistanceMeters(points: ParsedTrackPoint[]) {
@@ -64,6 +66,17 @@ function calculateDistanceMeters(points: ParsedTrackPoint[]) {
 
     return distance + calculateSegmentDistanceMeters(previousPoint, point)
   }, 0)
+}
+
+function calculateDurationSeconds(points: GpxPoint[]) {
+  const startTime = getTimestamp(points[0]?.time)
+  const endTime = getTimestamp(points.at(-1)?.time)
+
+  if (startTime === undefined || endTime === undefined || endTime < startTime) {
+    return 0
+  }
+
+  return Math.round((endTime - startTime) / 1_000)
 }
 
 function calculateSegmentDistanceMeters(from: ParsedTrackPoint, to: ParsedTrackPoint) {
@@ -80,6 +93,16 @@ function calculateSegmentDistanceMeters(from: ParsedTrackPoint, to: ParsedTrackP
 
 function toRadians(degrees: number) {
   return (degrees * Math.PI) / 180
+}
+
+function getTimestamp(value: string | undefined) {
+  if (!value) {
+    return undefined
+  }
+
+  const timestamp = Date.parse(value)
+
+  return Number.isFinite(timestamp) ? timestamp : undefined
 }
 
 function findElements(root: Document | Element, tagName: string) {
