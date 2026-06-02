@@ -5,4 +5,16 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/WhiteWalkers/',
+  build: {
+    chunkSizeWarningLimit: 1300,
+    rolldownOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/maplibre-gl')) {
+            return 'maplibre'
+          }
+        },
+      },
+    },
+  },
 })
