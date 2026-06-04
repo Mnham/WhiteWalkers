@@ -13,20 +13,7 @@
   height: 100svh;
   min-height: 100svh;
   text-align: left;
-  background:
-    radial-gradient(circle at top left, rgb(106 64 255 / 24%), transparent 34rem),
-    linear-gradient(135deg, #10131c 0%, #151925 48%, #0e1118 100%);
-}
-
-.app-shell::after {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  content: '';
-  background:
-    linear-gradient(90deg, rgb(8 11 18 / 34%) 0%, rgb(8 11 18 / 8%) 42%, transparent 78%),
-    radial-gradient(circle at bottom right, rgb(56 211 159 / 18%), transparent 28rem);
+  background: #10131c;
 }
 
 .control-panel {
