@@ -14,7 +14,7 @@ type RouteFeatureCollection = FeatureCollection<
 
 export interface MapTrack {
   id: number
-  positions: TrackPosition[]
+  segments: TrackPosition[][]
 }
 
 interface TrackMapProps {
@@ -72,7 +72,7 @@ export function TrackMap({
   const mapRef = useRef<maplibregl.Map | null>(null)
   const [mapReady, setMapReady] = useState(false)
   const boundsPositions = useMemo(
-    () => tracks.flatMap((track) => track.positions),
+    () => tracks.flatMap((track) => track.segments).flat(),
     [tracks],
   )
   const routeData = useMemo(() => createRouteGeoJson(tracks), [tracks])
@@ -208,19 +208,20 @@ function createRouteGeoJson(tracks: MapTrack[]): RouteFeatureCollection {
   return {
     type: 'FeatureCollection',
     features: tracks
-      .filter((track) => track.positions.length >= 2)
-      .map((track) => {
-        return {
-          type: 'Feature',
+      .flatMap((track) => {
+        const drawableSegments = track.segments.filter((segment) => segment.length >= 2)
+
+        return drawableSegments.map((segment) => ({
+          type: 'Feature' as const,
           properties: {
             color: ROUTE_COLOR,
             trackId: track.id,
           },
           geometry: {
-            type: 'LineString',
-            coordinates: track.positions.map(([lat, lng]) => [lng, lat]),
+            type: 'LineString' as const,
+            coordinates: segment.map(([lat, lng]) => [lng, lat]),
           },
-        }
+        }))
       }),
   }
 }

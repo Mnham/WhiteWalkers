@@ -8,6 +8,7 @@ export interface Track {
 
 export interface TrackPoint {
   trackId: number
+  segmentIndex: number
   lat: number
   lng: number
 }

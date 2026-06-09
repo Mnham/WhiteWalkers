@@ -1,4 +1,7 @@
-interface ParsedTrackPoint {
+import { cleanGpxTrack } from './cleanGpxTrack'
+import { calculatePathDistanceMeters, type GeoPoint } from './geo'
+
+interface ParsedTrackPoint extends GeoPoint {
   lat: number
   lng: number
 }
@@ -8,9 +11,8 @@ export interface ParsedGpxTrack {
   distanceMeters: number
   durationSeconds: number
   points: ParsedTrackPoint[]
+  segments: ParsedTrackPoint[][]
 }
-
-const EARTH_RADIUS_METERS = 6_371_000
 
 interface GpxPoint extends ParsedTrackPoint {
   time?: string
@@ -33,11 +35,18 @@ export function parseGpx(gpxText: string): ParsedGpxTrack {
     throw new Error('The GPX file does not contain any track points.')
   }
 
+  const segments = cleanGpxTrack(points)
+
+  if (segments.length === 0) {
+    throw new Error('The GPX file does not contain enough usable track points after cleanup.')
+  }
+
   return {
-    startedAt: points[0].time,
-    distanceMeters: calculateDistanceMeters(points),
-    durationSeconds: calculateDurationSeconds(points),
-    points: points.map(({ lat, lng }) => ({ lat, lng })),
+    startedAt: segments[0]?.[0]?.time ?? points[0].time,
+    distanceMeters: calculateSegmentsDistanceMeters(segments),
+    durationSeconds: calculateSegmentsDurationSeconds(segments),
+    points: segments.flatMap((segment) => toParsedTrackPoints(segment)),
+    segments: segments.map((segment) => toParsedTrackPoints(segment)),
   }
 }
 
@@ -56,16 +65,12 @@ function parsePoint(element: Element): GpxPoint | undefined {
   }
 }
 
-function calculateDistanceMeters(points: ParsedTrackPoint[]) {
-  return points.reduce((distance, point, index) => {
-    const previousPoint = points[index - 1]
+function calculateSegmentsDistanceMeters(segments: GpxPoint[][]) {
+  return segments.reduce((distance, segment) => distance + calculatePathDistanceMeters(segment), 0)
+}
 
-    if (!previousPoint) {
-      return distance
-    }
-
-    return distance + calculateSegmentDistanceMeters(previousPoint, point)
-  }, 0)
+function calculateSegmentsDurationSeconds(segments: GpxPoint[][]) {
+  return segments.reduce((duration, segment) => duration + calculateDurationSeconds(segment), 0)
 }
 
 function calculateDurationSeconds(points: GpxPoint[]) {
@@ -79,20 +84,8 @@ function calculateDurationSeconds(points: GpxPoint[]) {
   return Math.round((endTime - startTime) / 1_000)
 }
 
-function calculateSegmentDistanceMeters(from: ParsedTrackPoint, to: ParsedTrackPoint) {
-  const fromLat = toRadians(from.lat)
-  const toLat = toRadians(to.lat)
-  const deltaLat = toRadians(to.lat - from.lat)
-  const deltaLng = toRadians(to.lng - from.lng)
-  const halfChord =
-    Math.sin(deltaLat / 2) ** 2 +
-    Math.cos(fromLat) * Math.cos(toLat) * Math.sin(deltaLng / 2) ** 2
-
-  return 2 * EARTH_RADIUS_METERS * Math.atan2(Math.sqrt(halfChord), Math.sqrt(1 - halfChord))
-}
-
-function toRadians(degrees: number) {
-  return (degrees * Math.PI) / 180
+function toParsedTrackPoints(points: GpxPoint[]) {
+  return points.map(({ lat, lng }) => ({ lat, lng }))
 }
 
 function getTimestamp(value: string | undefined) {

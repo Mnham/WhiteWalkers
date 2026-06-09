@@ -12,25 +12,33 @@ function App() {
   const [trackPoints, setTrackPoints] = useState<TrackPoint[]>([])
   const nextTrackIdRef = useRef(1)
   const mapTracks = useMemo<MapTrack[]>(() => {
-    const pointsByTrackId = new Map<number, TrackPoint[]>()
+    const pointsByTrackId = new Map<number, Map<number, TrackPoint[]>>()
 
     for (const point of trackPoints) {
-      const points = pointsByTrackId.get(point.trackId) ?? []
+      const segmentsByIndex = pointsByTrackId.get(point.trackId) ?? new Map<number, TrackPoint[]>()
+      const points = segmentsByIndex.get(point.segmentIndex) ?? []
+
       points.push(point)
-      pointsByTrackId.set(point.trackId, points)
+      segmentsByIndex.set(point.segmentIndex, points)
+      pointsByTrackId.set(point.trackId, segmentsByIndex)
     }
 
     return tracks
       .map((track) => {
-        const points = pointsByTrackId.get(track.id) ?? []
+        const segmentsByIndex = pointsByTrackId.get(track.id)
+        const segments = segmentsByIndex
+          ? Array.from(segmentsByIndex.entries())
+              .toSorted(([firstIndex], [secondIndex]) => firstIndex - secondIndex)
+              .map(([, points]) => points.map((point) => [point.lat, point.lng] as [number, number]))
+          : []
 
-        if (points.length === 0) {
+        if (segments.length === 0) {
           return undefined
         }
 
         return {
           id: track.id,
-          positions: points.map((point) => [point.lat, point.lng] as [number, number]),
+          segments,
         }
       })
       .filter((track): track is MapTrack => Boolean(track))
@@ -56,12 +64,15 @@ function App() {
         durationSeconds: parsedTrack.durationSeconds,
       })
 
-      nextTrackPoints.push(
-        ...parsedTrack.points.map((point) => ({
-          ...point,
-          trackId,
-        })),
-      )
+      for (const [segmentIndex, segment] of parsedTrack.segments.entries()) {
+        nextTrackPoints.push(
+          ...segment.map((point) => ({
+            ...point,
+            segmentIndex,
+            trackId,
+          })),
+        )
+      }
     }
 
     setTracks((currentTracks) => [...currentTracks, ...nextTracks].toSorted(compareTracksByDate))
