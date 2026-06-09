@@ -73,10 +73,6 @@
   padding: 12px;
 }
 
-.track-upload {
-  display: block;
-}
-
 .track-upload input {
   position: absolute;
   width: 1px;
@@ -104,26 +100,10 @@
   user-select: none;
 }
 
-.track-upload:not(:has(input:disabled)) .track-upload-button:hover {
+.track-upload-button:hover {
   border-color: rgb(255 255 255 / 28%);
   background: linear-gradient(135deg, #8b5cf6, #2f6df6);
   transform: translateY(-1px);
-}
-
-.track-upload input:disabled + .track-upload-status,
-.track-upload:has(input:disabled) .track-upload-button {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.track-upload-status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .stats-grid {
@@ -226,7 +206,7 @@
     inset 0 1px 0 rgb(255 255 255 / 10%);
 }
 
-.track-upload:not(:has(input:disabled)) .track-upload-button:active,
+.track-upload-button:active,
 .clear-tracks-button:not(:disabled):active,
 .map-actions-panel button:not(:disabled):active {
   transform: translateY(0);

@@ -1,48 +1,15 @@
-import { useMemo, useRef, useState } from 'react'
-import { TrackMap, type MapTrack } from './features/map/TrackMap'
+import { useRef, useState } from 'react'
+import { TrackMap } from './features/map/TrackMap'
 import { TrackUpload } from './features/tracks/TrackUpload'
 import type { ParsedGpxTrack } from './features/import/parseGpx'
-import type { Track, TrackPoint } from './types/track'
+import type { Track, TrackPosition } from './types/track'
 import './App.css'
 
 function App() {
   const [fitRequest, setFitRequest] = useState(0)
   const [selectedTrackId, setSelectedTrackId] = useState<number>()
   const [tracks, setTracks] = useState<Track[]>([])
-  const [trackPoints, setTrackPoints] = useState<TrackPoint[]>([])
   const nextTrackIdRef = useRef(1)
-  const mapTracks = useMemo<MapTrack[]>(() => {
-    const pointsByTrackId = new Map<number, Map<number, TrackPoint[]>>()
-
-    for (const point of trackPoints) {
-      const segmentsByIndex = pointsByTrackId.get(point.trackId) ?? new Map<number, TrackPoint[]>()
-      const points = segmentsByIndex.get(point.segmentIndex) ?? []
-
-      points.push(point)
-      segmentsByIndex.set(point.segmentIndex, points)
-      pointsByTrackId.set(point.trackId, segmentsByIndex)
-    }
-
-    return tracks
-      .map((track) => {
-        const segmentsByIndex = pointsByTrackId.get(track.id)
-        const segments = segmentsByIndex
-          ? Array.from(segmentsByIndex.entries())
-              .toSorted(([firstIndex], [secondIndex]) => firstIndex - secondIndex)
-              .map(([, points]) => points.map((point) => [point.lat, point.lng] as [number, number]))
-          : []
-
-        if (segments.length === 0) {
-          return undefined
-        }
-
-        return {
-          id: track.id,
-          segments,
-        }
-      })
-      .filter((track): track is MapTrack => Boolean(track))
-  }, [tracks, trackPoints])
   const totalDistanceMeters =
     tracks.reduce((totalDistance, track) => totalDistance + track.distanceMeters, 0)
   const totalDurationSeconds =
@@ -50,39 +17,27 @@ function App() {
 
   function handleTracksImported(importedTracks: ParsedGpxTrack[]) {
     const importedAt = new Date().toISOString()
-    const nextTracks: Track[] = []
-    const nextTrackPoints: TrackPoint[] = []
-
-    for (const parsedTrack of importedTracks) {
+    const nextTracks = importedTracks.map((parsedTrack): Track => {
       const trackId = nextTrackIdRef.current++
 
-      nextTracks.push({
+      return {
         id: trackId,
         importedAt,
         startedAt: parsedTrack.startedAt,
         distanceMeters: parsedTrack.distanceMeters,
         durationSeconds: parsedTrack.durationSeconds,
-      })
-
-      for (const [segmentIndex, segment] of parsedTrack.segments.entries()) {
-        nextTrackPoints.push(
-          ...segment.map((point) => ({
-            ...point,
-            segmentIndex,
-            trackId,
-          })),
-        )
+        segments: parsedTrack.segments.map((segment) =>
+          segment.map((point) => [point.lat, point.lng] as TrackPosition),
+        ),
       }
-    }
+    })
 
     setTracks((currentTracks) => [...currentTracks, ...nextTracks].toSorted(compareTracksByDate))
-    setTrackPoints((currentPoints) => [...currentPoints, ...nextTrackPoints])
   }
 
   function handleClearTracks() {
     setSelectedTrackId(undefined)
     setTracks([])
-    setTrackPoints([])
   }
 
   return (
@@ -90,7 +45,7 @@ function App() {
       <TrackMap
         fitRequest={fitRequest}
         selectedTrackId={selectedTrackId}
-        tracks={mapTracks}
+        tracks={tracks}
       />
 
       <aside className="control-panel" aria-label="GPS track controls">
@@ -149,7 +104,7 @@ function App() {
 
         <section className="panel-section map-actions-panel" aria-label="Управление картой">
           <button
-            disabled={mapTracks.length === 0}
+            disabled={tracks.length === 0}
             onClick={() => setFitRequest((request) => request + 1)}
             type="button"
           >

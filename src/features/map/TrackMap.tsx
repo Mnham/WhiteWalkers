@@ -1,20 +1,26 @@
 import * as maplibregl from 'maplibre-gl'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { FeatureCollection, LineString } from 'geojson'
 import type { FilterSpecification, GeoJSONSource, StyleSpecification } from 'maplibre-gl'
+import type { TrackSegment } from '../../types/track'
 
-type TrackPosition = [number, number]
-type RouteFeatureCollection = FeatureCollection<
-  LineString,
-  {
-    color: string
-    trackId: number
-  }
->
+type RouteFeatureCollection = {
+  type: 'FeatureCollection'
+  features: Array<{
+    type: 'Feature'
+    properties: {
+      color: string
+      trackId: number
+    }
+    geometry: {
+      type: 'LineString'
+      coordinates: Array<[number, number]>
+    }
+  }>
+}
 
-export interface MapTrack {
+interface MapTrack {
   id: number
-  segments: TrackPosition[][]
+  segments: TrackSegment[]
 }
 
 interface TrackMapProps {

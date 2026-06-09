@@ -1,30 +1,16 @@
 import { calculatePathDistanceMeters, calculateSegmentDistanceMeters, type GeoPoint } from './geo'
 
-export interface CleanGpxTrackOptions {
-  jumpDistanceMeters?: number
-  minSegmentPoints?: number
-  minSegmentDistanceMeters?: number
+const JUMP_DISTANCE_METERS = 500
+const MIN_SEGMENT_POINTS = 20
+const MIN_SEGMENT_DISTANCE_METERS = 100
+
+export function cleanGpxTrack<TPoint extends GeoPoint>(points: TPoint[]): TPoint[][] {
+  const segments = splitSegments(points)
+
+  return segments.filter(shouldKeepSegment)
 }
 
-const DEFAULT_OPTIONS = {
-  jumpDistanceMeters: 500,
-  minSegmentPoints: 20,
-  minSegmentDistanceMeters: 100,
-} satisfies Required<CleanGpxTrackOptions>
-
-export function cleanGpxTrack<TPoint extends GeoPoint>(
-  points: TPoint[],
-  options: CleanGpxTrackOptions = {},
-): TPoint[][] {
-  const resolvedOptions = { ...DEFAULT_OPTIONS, ...options }
-  const segments = splitSegments(points, resolvedOptions.jumpDistanceMeters)
-
-  return segments.filter((segment) =>
-    shouldKeepSegment(segment, resolvedOptions),
-  )
-}
-
-function splitSegments<TPoint extends GeoPoint>(points: TPoint[], jumpDistanceMeters: number) {
+function splitSegments<TPoint extends GeoPoint>(points: TPoint[]) {
   const segments: TPoint[][] = []
   let currentSegment: TPoint[] = []
 
@@ -38,7 +24,7 @@ function splitSegments<TPoint extends GeoPoint>(points: TPoint[], jumpDistanceMe
 
     const distanceMeters = calculateSegmentDistanceMeters(previousPoint, point)
 
-    if (distanceMeters >= jumpDistanceMeters) {
+    if (distanceMeters >= JUMP_DISTANCE_METERS) {
       segments.push(currentSegment)
       currentSegment = [point]
       continue
@@ -54,12 +40,9 @@ function splitSegments<TPoint extends GeoPoint>(points: TPoint[], jumpDistanceMe
   return segments
 }
 
-function shouldKeepSegment<TPoint extends GeoPoint>(
-  segment: TPoint[],
-  options: Required<CleanGpxTrackOptions>,
-) {
+function shouldKeepSegment<TPoint extends GeoPoint>(segment: TPoint[]) {
   return (
-    segment.length >= options.minSegmentPoints &&
-    calculatePathDistanceMeters(segment) >= options.minSegmentDistanceMeters
+    segment.length >= MIN_SEGMENT_POINTS &&
+    calculatePathDistanceMeters(segment) >= MIN_SEGMENT_DISTANCE_METERS
   )
 }

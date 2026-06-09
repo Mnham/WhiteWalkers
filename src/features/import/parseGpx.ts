@@ -1,20 +1,14 @@
 import { cleanGpxTrack } from './cleanGpxTrack'
 import { calculatePathDistanceMeters, type GeoPoint } from './geo'
 
-interface ParsedTrackPoint extends GeoPoint {
-  lat: number
-  lng: number
-}
-
 export interface ParsedGpxTrack {
   startedAt?: string
   distanceMeters: number
   durationSeconds: number
-  points: ParsedTrackPoint[]
-  segments: ParsedTrackPoint[][]
+  segments: GeoPoint[][]
 }
 
-interface GpxPoint extends ParsedTrackPoint {
+interface GpxPoint extends GeoPoint {
   time?: string
 }
 
@@ -42,11 +36,10 @@ export function parseGpx(gpxText: string): ParsedGpxTrack {
   }
 
   return {
-    startedAt: segments[0]?.[0]?.time ?? points[0].time,
+    startedAt: segments[0][0].time,
     distanceMeters: calculateSegmentsDistanceMeters(segments),
     durationSeconds: calculateSegmentsDurationSeconds(segments),
-    points: segments.flatMap((segment) => toParsedTrackPoints(segment)),
-    segments: segments.map((segment) => toParsedTrackPoints(segment)),
+    segments: segments.map((segment) => toGeoPoints(segment)),
   }
 }
 
@@ -84,7 +77,7 @@ function calculateDurationSeconds(points: GpxPoint[]) {
   return Math.round((endTime - startTime) / 1_000)
 }
 
-function toParsedTrackPoints(points: GpxPoint[]) {
+function toGeoPoints(points: GpxPoint[]) {
   return points.map(({ lat, lng }) => ({ lat, lng }))
 }
 

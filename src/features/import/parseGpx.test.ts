@@ -60,7 +60,6 @@ describe('parseGpx', () => {
 
     expect(parsedTrack.startedAt).toBe(firstSegment[0].time)
     expect(parsedTrack.segments).toEqual([stripTimes(firstSegment), stripTimes(secondSegment)])
-    expect(parsedTrack.points).toEqual([...stripTimes(firstSegment), ...stripTimes(secondSegment)])
     expect(parsedTrack.distanceMeters).toBeCloseTo(
       calculatePathDistanceMeters(firstSegment) + calculatePathDistanceMeters(secondSegment),
       5,

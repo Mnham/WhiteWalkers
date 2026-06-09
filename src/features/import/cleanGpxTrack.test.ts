@@ -38,7 +38,7 @@ describe('cleanGpxTrack', () => {
     )
   })
 
-  it('drops short fragments after splitting but still reports excluded jumps', () => {
+  it('drops short fragments after splitting', () => {
     const keptSegment = makeWalkingSegment(55)
     const shortTail = makeWalkingSegment(55.02, 5)
     const points = [...keptSegment, ...shortTail]
